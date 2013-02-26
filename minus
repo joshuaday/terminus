@@ -17,6 +17,7 @@ local chunk, path, message = locateloadfile(module)
 if chunk then
 	math.randomseed(os.time())
 	chunk( )
+	os.exit(0)
 else
 	error(message)
 end
