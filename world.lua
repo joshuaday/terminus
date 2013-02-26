@@ -1,62 +1,39 @@
+local assets = require "art"
 
 local player = {
 	x = 0, y = 0, xv = 0, yv = 0, standing = true, touch = { },
 	w = 5, h = 3, facing = 1,
-	left = {
-		"| @  ",
-		"+^T> ",
-		" / \\ ",
-		fg = 15, bg = 0
-	},
-	right = {
-		"  @ |",
-		" <T^+",
-		" / \\ ",
-		fg = 15, bg = 0
-	}
+	art = assets.player
 }
 
 local dude = {
 	x = 30, y = 0, xv = 0, yv = 0, standing = true, touch = { },
 	w = 6, h = 3,
-	art = {
-		"/`.,''",
-		" (o.. ",
-		" ,; .;",
-		fg = 11, bg = 0
-	}
+	art = assets.dude
 }
 
 local cloud = {
 	x = 25, y = -2, z = .5, xv = 0, yv = 0, standing = true, touch = { },
-	art = {
-		" %%% %%%",
-		"%%%%%%%%%",
-		"%%%%%%%%%",
-		fg = 7, bg = 0
-	}
+	art = assets.cloud
 }
 
 local sun = {
 	x = 22, y = -1.0, z = .3, xv = 0, yv = 0, standing = true, touch = { },
-	art = {
-		" %%% ",
-		"%%%%%",
-		"%%%%%",
-		" %%% ",
-		fg = 11, bg = 0
-	}
+	art = assets.sun
+
 }
 
 local floor = {
-	x = -90, y = 3, xv = 0, yv = 0, fixed = true, touch = { },
-	w = 210, h = 4,
-	art = {
-		"$%#%",
-		"^^^^",
-		"^^^^",
-		fg = 10, bg = 2
-	}
+	x = -90, y = 3, fixed = true, touch = { },
+	w = 210, h = 4, xv = 0, yv = 0,
+	art = assets.grass
+}
+
+local floor2 = {
+	x = floor.x + floor.w, y = 2, fixed = true, touch = { },
+	w = 30, h = 5, xv = 0, yv = 0,
+	art = assets.grass
+	
 }
 
 local camera = {
@@ -64,7 +41,7 @@ local camera = {
 }
 
 local obs = {
-	player, dude, floor
+	player, dude, floor, floor2
 }
 
 local sky = {
@@ -94,7 +71,8 @@ local function drawtexture(term, x, y, art, w, h)
 	for cy = y1, y2 do
 		local i = 1 + ((cy - y) % th)
 		for cx = x1, x2 do
-			term.at(cx, cy).put(string.byte(art[i], 1 + ((cx - x) % tw)))
+			local c = string.byte(art[i], 1 + ((cx - x) % tw))
+			if c > 32 then term.at(cx, cy).put(c) end
 		end
 	end
 end
@@ -121,8 +99,8 @@ local function draw(term, beeping)
 		local px, py = math.floor(ob.x) - math.floor(camera.x), math.floor(ob.y) - math.floor(camera.y)
 		
 		local art = ob.art
-		if not art then
-			art = ob.facing == 1 and ob.right or ob.left
+		if art.left ~= nil then
+			art = ob.facing == 1 and art.right or art.left
 		end
 		term.fg(art.fg or 15).bg(art.bg or 0)
 		drawtexture(term, px, py, art, ob.w, ob.h)
