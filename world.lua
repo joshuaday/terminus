@@ -1,10 +1,17 @@
+
 local player = {
 	x = 0, y = 0, xv = 0, yv = 0, standing = true, touch = { },
-	w = 4, h = 3,
-	art = {
-		"| @ ",
-		"+^T>",
-		" / \\",
+	w = 5, h = 3, facing = 1,
+	left = {
+		"| @  ",
+		"+^T> ",
+		" / \\ ",
+		fg = 15, bg = 0
+	},
+	right = {
+		"  @ |",
+		" <T^+",
+		" / \\ ",
 		fg = 15, bg = 0
 	}
 }
@@ -104,16 +111,21 @@ local function draw(term, beeping)
 		local ob = sky[i]
 		local px, py = math.floor(ob.x) - math.floor(ob.z * camera.x), math.floor(ob.y) - math.floor(ob.z * camera.y)
 		
-		term.fg(ob.art.fg or 15).bg(ob.art.bg or 0)
-		drawart(term, px, py, ob.art)
+		local art = ob.art
+		term.fg(art.fg or 15).bg(art.bg or 0)
+		drawart(term, px, py, art)
 	end
 
 	for i = 1, #obs do
 		local ob = obs[i]
 		local px, py = math.floor(ob.x) - math.floor(camera.x), math.floor(ob.y) - math.floor(camera.y)
 		
-		term.fg(ob.art.fg or 15).bg(ob.art.bg or 0)
-		drawtexture(term, px, py, ob.art, ob.w, ob.h)
+		local art = ob.art
+		if not art then
+			art = ob.facing == 1 and ob.right or ob.left
+		end
+		term.fg(art.fg or 15).bg(art.bg or 0)
+		drawtexture(term, px, py, art, ob.w, ob.h)
 	end
 end
 
@@ -191,6 +203,7 @@ local function feed(dx, dy)
 			player.xv = 0
 		else
 			player.xv = .5 * dx
+			player.facing = dx
 		end
 	end
 
