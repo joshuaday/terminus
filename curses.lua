@@ -6,7 +6,7 @@ local hasbold, hasblink = true, true
 local black = color(0, 0, 0, 1)
 
 local function getcurses()
-	local ncurses = ffi.load("ncurses")
+	local ncurses = ffi.load("ncurses.so.5")
 
 	require "cdefheader"
 

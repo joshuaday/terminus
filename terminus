@@ -1,4 +1,4 @@
-#! /usr/local/bin/luajit
+#! /usr/bin/env luajit
 local module = arg[1] or "minus-main"
 
 module = module:gsub("%.lua$", "") -- trim .lua

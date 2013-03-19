@@ -1,8 +1,9 @@
 local assets = require "art"
+local boxes = require "boxes"
 
 local player = {
 	x = 0, y = 0, xv = 0, yv = 0, standing = true, touch = { },
-	w = 5, h = 3, facing = 1,
+	w = 3, h = 3, facing = 1,
 	art = assets.player
 }
 
@@ -33,7 +34,6 @@ local floor2 = {
 	x = floor.x + floor.w, y = 2, fixed = true, touch = { },
 	w = 30, h = 5, xv = 0, yv = 0,
 	art = assets.grass
-	
 }
 
 local camera = {
@@ -48,6 +48,10 @@ local sky = {
 	sun, cloud
 }
 
+
+for i = 1, #obs do
+	obs[i].rect = boxes.attach(obs[i])
+end
 
 local termw, termh
 
@@ -126,7 +130,7 @@ local function collide( )
 		for j = i + 1, #obs do
 			local o1, o2 = obs[i], obs[j]
 
-			if 
+			if not (o1.fixed and o2.fixed) and
 				(o1.y + o1.h >= o2.y) and (o2.y + o2.h >= o1.y) and
 				(o1.x + o1.w >= o2.x) and (o2.x + o2.w >= o1.x) then
 
@@ -146,18 +150,26 @@ local function collide( )
 end
 
 local function advance( )
+	-- first update the collision objects based on what the rectangle wants to do
+	-- (and for acceleration, etc.)
 	for i = 1, #obs do
 		local ob = obs[i]
 		ob.standing = false
+
+		ob.rect.left.delta_sideways, ob.rect.right.delta_sideways, ob.rect.top.delta_sideways, ob.rect.bottom.delta_sideways = ob.yv, ob.yv, ob.xv, ob.xv
+		ob.rect.left.delta_forward, ob.rect.right.delta_forward, ob.rect.top.delta_forward, ob.rect.bottom.delta_forward = ob.xv, ob.xv, ob.yv, ob.yv
 	end
-	
+
+	boxes.advance( )
 
 	for i = 1, #obs do
 		local ob = obs[i]
 
 		if not ob.fixed then
-			ob.x = ob.x + ob.xv
-			ob.y = ob.y + ob.yv
+			-- all four edges want to move!
+
+			-- ob.x = ob.x + ob.xv
+			--ob.y = ob.y + ob.yv
 			
 			ob.xv = friction(ob.xv, .005)
 			ob.yv = ob.yv + .025

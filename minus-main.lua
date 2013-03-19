@@ -19,6 +19,7 @@ local function simulate(term)
 	local command = nil
 	local hasquit = false
 	local paused = false
+	local frame_number = 0
 
 	local time = 0
 
@@ -79,6 +80,8 @@ local function simulate(term)
 		
 		term.clip()
 
+		frame_number = frame_number + 1
+		term.at(0,0).fg(15).bg(0).print(frame_number)
 		term.refresh()
 		term.napms(15)
 	until hasquit
