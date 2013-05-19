@@ -1,17 +1,5 @@
+local Generator = require "generator"
 local assets = require "art"
-local boxes = require "boxes"
-
-local player = {
-	x = 0, y = 0, xv = 0, yv = 0, standing = true, touch = { },
-	w = 3, h = 3, facing = 1,
-	art = assets.player
-}
-
-local dude = {
-	x = 30, y = 0, xv = 0, yv = 0, standing = true, touch = { },
-	w = 6, h = 3,
-	art = assets.dude
-}
 
 local cloud = {
 	x = 25, y = -2, z = .5, xv = 0, yv = 0, standing = true, touch = { },
@@ -24,42 +12,19 @@ local sun = {
 
 }
 
-local floor = {
-	x = -90, y = 3, fixed = true, touch = { },
-	w = 210, h = 4, xv = 0, yv = 0,
-	art = assets.grass
-}
-
-local floor2 = {
-	x = floor.x + floor.w, y = 2, fixed = true, touch = { },
-	w = 30, h = 5, xv = 0, yv = 0,
-	art = assets.grass
-}
-
 local camera = {
 	track = player, x = 0, y = -20
 }
 
-local obs = {
-	player, dude, floor, floor2
-}
+local obs = Generator.stage()
 
 local sky = {
 	sun, cloud
 }
 
-
-for i = 1, #obs do
-	obs[i].rect = boxes.attach(obs[i])
-end
+local player = obs.player
 
 local termw, termh
-
-local function drawart(term, x, y, art)
-	for i = 1, #art do
-		term.at(x, y + i - 1).print(art[i])
-	end
-end
 
 local function drawtexture(term, x, y, art, w, h)
 	local tw, th = #art[1], #art
@@ -95,7 +60,7 @@ local function draw(term, beeping)
 		
 		local art = ob.art
 		term.fg(art.fg or 15).bg(art.bg or 0)
-		drawart(term, px, py, art)
+		drawtexture(term, px, py, art, #art[1], #art)
 	end
 
 	for i = 1, #obs do
@@ -126,7 +91,7 @@ local function friction(v, dv)
 end
 
 local function collide( )
-	for i = 1, #obs do
+	for i = 1, #obs - 1 do
 		for j = i + 1, #obs do
 			local o1, o2 = obs[i], obs[j]
 
@@ -152,15 +117,11 @@ end
 local function advance( )
 	-- first update the collision objects based on what the rectangle wants to do
 	-- (and for acceleration, etc.)
+
 	for i = 1, #obs do
 		local ob = obs[i]
 		ob.standing = false
-
-		ob.rect.left.delta_sideways, ob.rect.right.delta_sideways, ob.rect.top.delta_sideways, ob.rect.bottom.delta_sideways = ob.yv, ob.yv, ob.xv, ob.xv
-		ob.rect.left.delta_forward, ob.rect.right.delta_forward, ob.rect.top.delta_forward, ob.rect.bottom.delta_forward = ob.xv, ob.xv, ob.yv, ob.yv
 	end
-
-	boxes.advance( )
 
 	for i = 1, #obs do
 		local ob = obs[i]
@@ -168,8 +129,8 @@ local function advance( )
 		if not ob.fixed then
 			-- all four edges want to move!
 
-			-- ob.x = ob.x + ob.xv
-			--ob.y = ob.y + ob.yv
+			ob.x = ob.x + ob.xv
+			ob.y = ob.y + ob.yv
 			
 			ob.xv = friction(ob.xv, .005)
 			ob.yv = ob.yv + .025
@@ -178,8 +139,16 @@ local function advance( )
 
 	collide( )
 
-	if dude.standing and math.random(20) == 1 then
-		dude.yv = -.5
+	for i = 1, #obs do
+		local dude = obs[i]
+		if dude.isdude then
+			if dude.standing and math.random(20) == 1 then
+				dude.yv = -.5
+			end
+			if math.random(10) == 1 then
+				dude.xv = .3 * (math.random(3) - 2)
+			end
+		end
 	end
 end
 
